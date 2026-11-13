@@ -29,8 +29,18 @@ def build_parser() -> argparse.ArgumentParser:
     init = sub.add_parser("init", help="Inicializa a VPS ou conecta um servidor target")
     init.add_argument("endpoint", nargs="?", help="IP/hostname público da VPS (modo target)")
     init.add_argument("--role", choices=["ingress"], help="Use --role ingress na VPS pública")
-    init.add_argument("--listen-port", type=int, default=None, help="Porta UDP WireGuard na VPS (padrão: 51820; escolhe outra se estiver ocupada)")
-    init.add_argument("--mss", type=int, default=None, help=f"Limite MSS TCP dos encaminhamentos (padrão: {TCP_MSS_DEFAULT}; faixa {TCP_MSS_MIN}-{TCP_MSS_MAX})")
+    init.add_argument(
+        "--listen-port",
+        type=int,
+        default=None,
+        help="Porta UDP WireGuard na VPS (padrão: 51820; escolhe outra se estiver ocupada)",
+    )
+    init.add_argument(
+        "--mss",
+        type=int,
+        default=None,
+        help=f"Limite MSS TCP dos encaminhamentos (padrão: {TCP_MSS_DEFAULT}; faixa {TCP_MSS_MIN}-{TCP_MSS_MAX})",
+    )
     init.add_argument("--ssh-host", help="Host usado para SSH; pode ser o nome Tailscale da VPS")
     init.add_argument("--ssh-user", help="Usuário SSH na VPS (padrão: usuário local)")
     init.add_argument("--ssh-port", type=int, default=22, help="Porta SSH da VPS")

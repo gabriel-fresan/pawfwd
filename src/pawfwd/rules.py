@@ -42,40 +42,43 @@ def sync_rules_to_ingress(cfg: dict[str, Any]) -> None:
     }
     encoded = base64.b64encode(json.dumps(payload).encode("utf-8")).decode("ascii")
     remote_output = ssh_remote(
-        control["host"], control["user"], int(control.get("port", 22)),
+        control["host"],
+        control["user"],
+        int(control.get("port", 22)),
         ["sudo", "-n", str(INSTALL_PATH), "rules", "import", "--payload", encoded],
     )
     if remote_output:
         say(f"[i] VPS: {remote_output.splitlines()[-1]}")
 
 
-def update_rules(cfg: dict[str, Any], spec: dict[str, Any], *, remove: bool,
-                 preserve_ip: bool = False) -> None:
+def update_rules(cfg: dict[str, Any], spec: dict[str, Any], *, remove: bool, preserve_ip: bool = False) -> None:
     if cfg["role"] != "target":
-        raise PawFwdError("Gerencie os encaminhamentos a partir do target (servidor doméstico). Assim as rotas de retorno também são atualizadas.")
+        raise PawFwdError(
+            "Gerencie os encaminhamentos a partir do target (servidor doméstico). Assim as rotas de retorno também são atualizadas."
+        )
     selected = set(spec["protocols"])
     public_port = spec["public_port"]
     if remove:
         cfg["rules"] = [
-            r for r in cfg.get("rules", [])
-            if not (r["public_port"] == public_port and r["proto"] in selected)
+            r for r in cfg.get("rules", []) if not (r["public_port"] == public_port and r["proto"] in selected)
         ]
         message = f"removido {public_port} ({', '.join(sorted(selected))})"
     else:
         # Replacing only the selected protocol(s) leaves the other protocol intact.
         cfg["rules"] = [
-            r for r in cfg.get("rules", [])
-            if not (r["public_port"] == public_port and r["proto"] in selected)
+            r for r in cfg.get("rules", []) if not (r["public_port"] == public_port and r["proto"] in selected)
         ]
         peer_ip = str(ipaddress.IPv4Interface(cfg["wireguard"]["address"]).ip)
         for proto in sorted(selected):
-            cfg["rules"].append({
-                "public_port": public_port,
-                "target_port": spec["target_port"],
-                "proto": proto,
-                "preserve_ip": preserve_ip,
-                "peer_ip": peer_ip,
-            })
+            cfg["rules"].append(
+                {
+                    "public_port": public_port,
+                    "target_port": spec["target_port"],
+                    "proto": proto,
+                    "preserve_ip": preserve_ip,
+                    "peer_ip": peer_ip,
+                }
+            )
         message = f"{public_port} → {spec['target_port']} ({', '.join(sorted(selected))})"
     cfg["rules"] = [validate_rule(r) for r in cfg.get("rules", [])]
     save_config(cfg)

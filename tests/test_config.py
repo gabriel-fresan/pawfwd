@@ -27,10 +27,12 @@ def test_expand_stored_rules_separa_both_em_tcp_e_udp():
 
 
 def test_expand_stored_rules_mantem_uma_regra_por_porta_e_protocolo():
-    rules = expand_stored_rules([
-        {"public_port": 1, "target_port": 2, "proto": "tcp", "peer_ip": "10.77.0.2"},
-        {"public_port": 1, "target_port": 3, "proto": "tcp", "peer_ip": "10.77.0.2"},
-    ])
+    rules = expand_stored_rules(
+        [
+            {"public_port": 1, "target_port": 2, "proto": "tcp", "peer_ip": "10.77.0.2"},
+            {"public_port": 1, "target_port": 3, "proto": "tcp", "peer_ip": "10.77.0.2"},
+        ]
+    )
     assert len(rules) == 1
     assert rules[0]["target_port"] == 3
 

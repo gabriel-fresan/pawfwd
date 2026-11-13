@@ -54,25 +54,29 @@ def serialize_wg_config(cfg: dict[str, Any]) -> str:
     if cfg["role"] == "ingress":
         lines.append(f"ListenPort = {wg['listen_port']}")
         for peer in cfg.get("peers", []):
-            lines.extend([
+            lines.extend(
+                [
+                    "",
+                    "[Peer]",
+                    f"PublicKey = {peer['public_key']}",
+                    f"AllowedIPs = {peer['tunnel_ip']}/32",
+                ]
+            )
+    else:
+        peer = cfg["ingress_peer"]
+        lines.extend(
+            [
+                f"FwMark = {WG_FWMARK}",
                 "",
                 "[Peer]",
                 f"PublicKey = {peer['public_key']}",
-                f"AllowedIPs = {peer['tunnel_ip']}/32",
-            ])
-    else:
-        peer = cfg["ingress_peer"]
-        lines.extend([
-            f"FwMark = {WG_FWMARK}",
-            "",
-            "[Peer]",
-            f"PublicKey = {peer['public_key']}",
-            f"Endpoint = {peer['endpoint']}:{peer['listen_port']}",
-            # This permits return packets to arbitrary client IPs, but Table=off
-            # prevents WireGuard from replacing the host's normal default route.
-            "AllowedIPs = 0.0.0.0/0",
-            "PersistentKeepalive = 25",
-        ])
+                f"Endpoint = {peer['endpoint']}:{peer['listen_port']}",
+                # This permits return packets to arbitrary client IPs, but Table=off
+                # prevents WireGuard from replacing the host's normal default route.
+                "AllowedIPs = 0.0.0.0/0",
+                "PersistentKeepalive = 25",
+            ]
+        )
     return "\n".join(lines) + "\n"
 
 

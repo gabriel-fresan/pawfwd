@@ -30,8 +30,7 @@ def load_config(required: bool = True) -> dict[str, Any]:
         raise PawFwdError(f"Não consegui ler {CONFIG_PATH}: {exc}") from exc
     if cfg.get("schema_version") != 2:
         raise PawFwdError(
-            "Esta configuração não é da versão 2. A configuração antiga foi preservada; "
-            "faça backup antes de migrar."
+            "Esta configuração não é da versão 2. A configuração antiga foi preservada; faça backup antes de migrar."
         )
     return cfg
 
@@ -62,9 +61,7 @@ def parse_port_spec(spec: str) -> dict[str, Any]:
     """Parse <public>[:<target>][/<tcp|udp>], defaulting to both protocols."""
     match = re.fullmatch(r"(?P<public>\d+)(?::(?P<target>\d+))?(?:/(?P<proto>tcp|udp))?", spec.strip().lower())
     if not match:
-        raise PawFwdError(
-            f"Formato inválido: {spec!r}. Use PORTA, PORTA:DESTINO, PORTA/tcp ou PORTA:DESTINO/udp."
-        )
+        raise PawFwdError(f"Formato inválido: {spec!r}. Use PORTA, PORTA:DESTINO, PORTA/tcp ou PORTA:DESTINO/udp.")
     public = validate_port(match.group("public"), "porta pública")
     target = validate_port(match.group("target") or public, "porta de destino")
     proto = match.group("proto") or "both"
@@ -117,17 +114,15 @@ def tunnel_details(cfg: dict[str, Any]) -> tuple[str, str]:
     elif cfg.get("role") == "ingress":
         network = str(ipaddress.IPv4Interface(cfg["wireguard"]["address"]).network)
     else:
-        network = str(ipaddress.IPv4Network(
-            cfg.get("ingress_peer", {}).get("tunnel_network", TUNNEL_NETWORK), strict=False
-        ))
+        network = str(
+            ipaddress.IPv4Network(cfg.get("ingress_peer", {}).get("tunnel_network", TUNNEL_NETWORK), strict=False)
+        )
     if cfg.get("ingress_tunnel_ip"):
         ingress_ip = str(ipaddress.IPv4Address(cfg["ingress_tunnel_ip"]))
     elif cfg.get("role") == "ingress":
         ingress_ip = str(ipaddress.IPv4Interface(cfg["wireguard"]["address"]).ip)
     else:
-        ingress_ip = str(ipaddress.IPv4Address(
-            cfg.get("ingress_peer", {}).get("tunnel_ip", INGRESS_TUNNEL_IP)
-        ))
+        ingress_ip = str(ipaddress.IPv4Address(cfg.get("ingress_peer", {}).get("tunnel_ip", INGRESS_TUNNEL_IP)))
     return network, ingress_ip
 
 
@@ -138,8 +133,5 @@ def validate_tcp_mss(value: Any) -> int:
     except (TypeError, ValueError) as exc:
         raise PawFwdError(f"MSS TCP inválido: {value!r}.") from exc
     if not TCP_MSS_MIN <= mss <= TCP_MSS_MAX:
-        raise PawFwdError(
-            f"MSS TCP precisa estar entre {TCP_MSS_MIN} e {TCP_MSS_MAX} "
-            f"para MTU {WG_MTU}."
-        )
+        raise PawFwdError(f"MSS TCP precisa estar entre {TCP_MSS_MIN} e {TCP_MSS_MAX} para MTU {WG_MTU}.")
     return mss

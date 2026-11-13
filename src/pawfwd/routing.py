@@ -27,19 +27,44 @@ def cleanup_owned_ip_rules(previous: list[dict[str, Any]]) -> None:
         kind = item.get("kind")
         if kind == "fwmark":
             command = [
-                "ip", "-4", "rule", "del", "pref", str(item["priority"]),
-                "fwmark", WG_FWMARK, "table", "main",
+                "ip",
+                "-4",
+                "rule",
+                "del",
+                "pref",
+                str(item["priority"]),
+                "fwmark",
+                WG_FWMARK,
+                "table",
+                "main",
             ]
         elif kind == "return_mark":
             command = [
-                "ip", "-4", "rule", "del", "pref", str(item["priority"]),
-                "fwmark", RETURN_FWMARK, "table", RT_TABLE_ID,
+                "ip",
+                "-4",
+                "rule",
+                "del",
+                "pref",
+                str(item["priority"]),
+                "fwmark",
+                RETURN_FWMARK,
+                "table",
+                RT_TABLE_ID,
             ]
         else:  # Clean up source-port rules created by early v2 development builds.
             command = [
-                "ip", "-4", "rule", "del", "pref", str(item["priority"]),
-                "ipproto", item["proto"], "sport", str(item["sport"]),
-                "table", RT_TABLE_ID,
+                "ip",
+                "-4",
+                "rule",
+                "del",
+                "pref",
+                str(item["priority"]),
+                "ipproto",
+                item["proto"],
+                "sport",
+                str(item["sport"]),
+                "table",
+                RT_TABLE_ID,
             ]
         run(command, check=False)
 
@@ -59,10 +84,23 @@ def cleanup_stale_table_rules() -> None:
         proto = parts[parts.index("ipproto") + 1]
         sport = parts[parts.index("sport") + 1]
         while True:
-            result = run([
-                "ip", "-4", "rule", "del", "pref", pref,
-                "ipproto", proto, "sport", sport, "table", RT_TABLE_ID,
-            ], check=False)
+            result = run(
+                [
+                    "ip",
+                    "-4",
+                    "rule",
+                    "del",
+                    "pref",
+                    pref,
+                    "ipproto",
+                    proto,
+                    "sport",
+                    sport,
+                    "table",
+                    RT_TABLE_ID,
+                ],
+                check=False,
+            )
             if result.returncode != 0:
                 break
 
@@ -73,11 +111,9 @@ def cleanup_stale_table_rules() -> None:
         if not pref.isdigit():
             continue
         if f"fwmark {WG_FWMARK}" in line and "lookup main" in line:
-            run(["ip", "-4", "rule", "del", "pref", pref,
-                 "fwmark", WG_FWMARK, "table", "main"], check=False)
+            run(["ip", "-4", "rule", "del", "pref", pref, "fwmark", WG_FWMARK, "table", "main"], check=False)
         elif f"fwmark {RETURN_FWMARK}" in line and f"lookup {RT_TABLE_ID}" in line:
-            run(["ip", "-4", "rule", "del", "pref", pref,
-                 "fwmark", RETURN_FWMARK, "table", RT_TABLE_ID], check=False)
+            run(["ip", "-4", "rule", "del", "pref", pref, "fwmark", RETURN_FWMARK, "table", RT_TABLE_ID], check=False)
 
 
 def next_rule_priority(used: set[int], candidate: int) -> int:
@@ -104,10 +140,8 @@ def apply_target_return_routes(cfg: dict[str, Any]) -> None:
 
     target_ip = str(ipaddress.IPv4Interface(cfg["wireguard"]["address"]).ip)
     tunnel_network = cfg.get("ingress_peer", {}).get("tunnel_network", TUNNEL_NETWORK)
-    run(["ip", "-4", "route", "replace", tunnel_network,
-         "dev", WG_IFACE, "src", target_ip, "table", RT_TABLE_ID])
-    run(["ip", "-4", "route", "replace", "default", "dev", WG_IFACE,
-         "table", RT_TABLE_ID])
+    run(["ip", "-4", "route", "replace", tunnel_network, "dev", WG_IFACE, "src", target_ip, "table", RT_TABLE_ID])
+    run(["ip", "-4", "route", "replace", "default", "dev", WG_IFACE, "table", RT_TABLE_ID])
 
     # Preserve the original client address in conntrack, then put only reply
     # packets onto the marked policy-routing table. Service source ports are
@@ -128,14 +162,12 @@ def apply_target_return_routes(cfg: dict[str, Any]) -> None:
     # WireGuard's own outer UDP packets use the normal host routing table,
     # avoiding an encapsulation loop through the policy table.
     mark_priority = next_rule_priority(used, WG_MARK_RULE_BASE)
-    run(["ip", "-4", "rule", "add", "pref", str(mark_priority),
-         "fwmark", WG_FWMARK, "table", "main"])
+    run(["ip", "-4", "rule", "add", "pref", str(mark_priority), "fwmark", WG_FWMARK, "table", "main"])
     created.append({"kind": "fwmark", "priority": mark_priority})
     used.add(mark_priority)
 
     return_priority = next_rule_priority(used, RULE_PRIORITY_BASE)
-    run(["ip", "-4", "rule", "add", "pref", str(return_priority),
-         "fwmark", RETURN_FWMARK, "table", RT_TABLE_ID])
+    run(["ip", "-4", "rule", "add", "pref", str(return_priority), "fwmark", RETURN_FWMARK, "table", RT_TABLE_ID])
     created.append({"kind": "return_mark", "priority": return_priority})
     cfg["routing_rules"] = created
     save_config(cfg)

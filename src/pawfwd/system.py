@@ -15,8 +15,9 @@ def say(message: str = "") -> None:
     print(message)
 
 
-def run(command: list[str], *, input_text: str | None = None,
-        check: bool = True, capture: bool = True) -> subprocess.CompletedProcess:
+def run(
+    command: list[str], *, input_text: str | None = None, check: bool = True, capture: bool = True
+) -> subprocess.CompletedProcess:
     try:
         result = subprocess.run(
             command,
@@ -43,8 +44,9 @@ def ensure_dependencies() -> None:
     missing = [item for item in required if shutil.which(item) is None]
     if missing:
         raise PawFwdError(
-            "Dependências ausentes: " + ", ".join(missing) +
-            ". No Debian/Ubuntu: sudo apt install wireguard-tools nftables openssh-client iproute2 procps"
+            "Dependências ausentes: "
+            + ", ".join(missing)
+            + ". No Debian/Ubuntu: sudo apt install wireguard-tools nftables openssh-client iproute2 procps"
         )
 
 

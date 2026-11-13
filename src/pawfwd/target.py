@@ -49,8 +49,7 @@ def parse_peer_registration(output: str) -> dict[str, Any]:
     )
 
 
-def init_target(endpoint: str, ssh_host: str | None, ssh_user: str | None,
-                ssh_port: int, name: str | None) -> None:
+def init_target(endpoint: str, ssh_host: str | None, ssh_user: str | None, ssh_port: int, name: str | None) -> None:
     ensure_dependencies()
     cleanup_legacy_installation()
     try:
@@ -98,9 +97,10 @@ def init_target(endpoint: str, ssh_host: str | None, ssh_user: str | None,
     save_config(cfg)  # Preserve the generated key so a failed SSH retry is idempotent.
     say(f"[*] Registrando este servidor na VPS via SSH ({user}@{control_host})...")
     remote_output = ssh_remote(
-        control_host, user, ssh_port,
-        ["sudo", "-n", str(INSTALL_PATH), "peer", "register",
-         "--public-key", public_key, "--name", name],
+        control_host,
+        user,
+        ssh_port,
+        ["sudo", "-n", str(INSTALL_PATH), "peer", "register", "--public-key", public_key, "--name", name],
     )
     registration = parse_peer_registration(remote_output)
 

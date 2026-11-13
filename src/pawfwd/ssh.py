@@ -44,13 +44,20 @@ def ssh_remote(host: str, user: str, port: int, remote_command: list[str]) -> st
         command = ["ssh"]
         if interactive:
             command.append("-tt")
-        command.extend([
-            "-p", str(port),
-            "-o", f"BatchMode={'no' if interactive else 'yes'}",
-            "-o", "ConnectTimeout=8",
-            "-o", "StrictHostKeyChecking=accept-new",
-            ssh_target, remote_text,
-        ])
+        command.extend(
+            [
+                "-p",
+                str(port),
+                "-o",
+                f"BatchMode={'no' if interactive else 'yes'}",
+                "-o",
+                "ConnectTimeout=8",
+                "-o",
+                "StrictHostKeyChecking=accept-new",
+                ssh_target,
+                remote_text,
+            ]
+        )
         # Use the invoking user's SSH keys and known_hosts, not root's files.
         local_user = os.environ.get("SUDO_USER")
         if local_user and local_user != "root":

@@ -23,7 +23,11 @@ def cmd_list(cfg: dict[str, Any]) -> None:
         say(f"WireGuard UDP: {cfg['wireguard']['listen_port']}")
         say(f"Peers: {len(cfg.get('peers', []))}")
         tcp_enabled = any(rule.get("proto") == "tcp" for rule in cfg.get("rules", []))
-        say(f"TCP MSS clamp: até {cfg.get('tcp_mss', TCP_MSS_DEFAULT)} bytes" if tcp_enabled else "TCP MSS clamp: aguardando encaminhamento TCP")
+        say(
+            f"TCP MSS clamp: até {cfg.get('tcp_mss', TCP_MSS_DEFAULT)} bytes"
+            if tcp_enabled
+            else "TCP MSS clamp: aguardando encaminhamento TCP"
+        )
     else:
         peer = cfg.get("ingress_peer")
         if peer:
@@ -93,4 +97,6 @@ def cmd_diag(cfg: dict[str, Any]) -> None:
         say(mss.stdout.strip() if mss.returncode == 0 else "(tabela ausente; normal sem encaminhamentos TCP)")
     if cfg["role"] == "ingress":
         say(f"\n[TCP MSS]\nConfigured ceiling: {cfg.get('tcp_mss', TCP_MSS_DEFAULT)} bytes")
-        say(f"\n[Firewall hint]\nGaranta UDP {cfg['wireguard']['listen_port']} liberado também no firewall do provedor VPS.")
+        say(
+            f"\n[Firewall hint]\nGaranta UDP {cfg['wireguard']['listen_port']} liberado também no firewall do provedor VPS."
+        )

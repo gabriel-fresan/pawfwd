@@ -84,7 +84,9 @@ def init_ingress(requested_listen_port: int | None, requested_mss: int | None = 
 
     listen_port = select_listen_port(requested_listen_port, cfg if existing else None)
     cfg["wireguard"]["listen_port"] = listen_port
-    cfg["tcp_mss"] = validate_tcp_mss(requested_mss if requested_mss is not None else cfg.get("tcp_mss", TCP_MSS_DEFAULT))
+    cfg["tcp_mss"] = validate_tcp_mss(
+        requested_mss if requested_mss is not None else cfg.get("tcp_mss", TCP_MSS_DEFAULT)
+    )
     selected_network = choose_tunnel_network(old_network)
     network_obj = ipaddress.IPv4Network(selected_network)
     if selected_network != old_network:
@@ -138,7 +140,9 @@ def peer_register(public_key: str, name: str) -> None:
     if existing and existing["public_key"] != public_key:
         raise PawFwdError(f"Já existe um peer chamado {name!r} com outra chave. Remova-o primeiro.")
     if peers and not existing:
-        raise PawFwdError("Esta versão suporta um target por ingress. O suporte multi-target fica para uma próxima versão.")
+        raise PawFwdError(
+            "Esta versão suporta um target por ingress. O suporte multi-target fica para uma próxima versão."
+        )
     if existing:
         peer = existing
         if ipaddress.IPv4Address(peer["tunnel_ip"]) not in network_obj or peer["tunnel_ip"] == ingress_ip:

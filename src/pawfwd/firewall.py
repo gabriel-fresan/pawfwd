@@ -71,9 +71,28 @@ def rebuild_ufw_rules(cfg: dict[str, Any], rules: list[dict[str, Any]], wan: str
         return
     for rule in rules:
         proto = rule["proto"]
-        run(["ufw", "route", "allow", "in", "on", wan, "out", "on", WG_IFACE,
-             "to", rule["peer_ip"], "port", str(rule["target_port"]), "proto", proto,
-             "comment", "PawFwd"], check=False)
+        run(
+            [
+                "ufw",
+                "route",
+                "allow",
+                "in",
+                "on",
+                wan,
+                "out",
+                "on",
+                WG_IFACE,
+                "to",
+                rule["peer_ip"],
+                "port",
+                str(rule["target_port"]),
+                "proto",
+                proto,
+                "comment",
+                "PawFwd",
+            ],
+            check=False,
+        )
 
 
 def build_mss_ruleset(cfg: dict[str, Any], rules: list[dict[str, Any]], wan: str) -> str | None:
@@ -100,15 +119,15 @@ def build_mss_ruleset(cfg: dict[str, Any], rules: list[dict[str, Any]], wan: str
         peer_ip, public_port, _, target_port = key
         statements.append(
             f'iifname "{wan}" tcp dport {public_port} '
-            f'tcp flags & (syn | ack) == syn '
-            f'tcp option maxseg size > {mss} '
-            f'tcp option maxseg size set {mss} counter'
+            f"tcp flags & (syn | ack) == syn "
+            f"tcp option maxseg size > {mss} "
+            f"tcp option maxseg size set {mss} counter"
         )
         statements.append(
             f'iifname "{WG_IFACE}" ip saddr {peer_ip} tcp sport {target_port} '
-            f'tcp flags & (syn | ack) == (syn | ack) '
-            f'tcp option maxseg size > {mss} '
-            f'tcp option maxseg size set {mss} counter'
+            f"tcp flags & (syn | ack) == (syn | ack) "
+            f"tcp option maxseg size > {mss} "
+            f"tcp option maxseg size set {mss} counter"
         )
     return f"""
 table inet {MSS_NFT_TABLE} {{
@@ -164,19 +183,13 @@ def apply_ingress_rules(cfg: dict[str, Any]) -> None:
     postrouting: list[str] = []
     for rule in rules:
         p, tp, proto, peer_ip = rule["public_port"], rule["target_port"], rule["proto"], rule["peer_ip"]
-        prerouting.append(
-            f'iifname "{wan}" {proto} dport {p} dnat to {peer_ip}:{tp}'
-        )
-        forwarding.append(
-            f'oifname "{WG_IFACE}" ip daddr {peer_ip} {proto} dport {tp} accept'
-        )
+        prerouting.append(f'iifname "{wan}" {proto} dport {p} dnat to {peer_ip}:{tp}')
+        forwarding.append(f'oifname "{WG_IFACE}" ip daddr {peer_ip} {proto} dport {tp} accept')
         forwarding.append(
             f'iifname "{WG_IFACE}" ip saddr {peer_ip} {proto} sport {tp} ct state established,related accept'
         )
         if not rule["preserve_ip"]:
-            postrouting.append(
-                f'oifname "{WG_IFACE}" ip daddr {peer_ip} {proto} dport {tp} masquerade'
-            )
+            postrouting.append(f'oifname "{WG_IFACE}" ip daddr {peer_ip} {proto} dport {tp} masquerade')
 
     ruleset = f"""
 table ip {NFT_TABLE} {{
@@ -218,9 +231,24 @@ def rebuild_target_ufw_rules(rules: list[dict[str, Any]]) -> None:
     for number in sorted(numbers, reverse=True):
         run(["ufw", "--force", "delete", str(number)], check=False)
     for rule in rules:
-        run(["ufw", "allow", "in", "on", WG_IFACE, "to", "any",
-             "port", str(rule["target_port"]), "proto", rule["proto"],
-             "comment", "PawFwd"], check=False)
+        run(
+            [
+                "ufw",
+                "allow",
+                "in",
+                "on",
+                WG_IFACE,
+                "to",
+                "any",
+                "port",
+                str(rule["target_port"]),
+                "proto",
+                rule["proto"],
+                "comment",
+                "PawFwd",
+            ],
+            check=False,
+        )
 
 
 def target_connmark_ruleset() -> str:

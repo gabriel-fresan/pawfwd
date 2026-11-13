@@ -118,8 +118,10 @@ def cleanup_legacy_installation() -> None:
         if proto not in ("tcp", "udp") or not sport.isdigit():
             continue
         while True:
-            result = run(["ip", "-4", "rule", "del", "pref", parts[0],
-                          "ipproto", proto, "sport", sport, "table", "199"], check=False)
+            result = run(
+                ["ip", "-4", "rule", "del", "pref", parts[0], "ipproto", proto, "sport", sport, "table", "199"],
+                check=False,
+            )
             if result.returncode != 0:
                 break
 
