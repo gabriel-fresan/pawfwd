@@ -91,6 +91,16 @@ O nome do projeto e o comando são `pawfwd`. Alguns identificadores de sistema c
 
 Renomear esses itens exige migração coordenada entre VPS e servidor doméstico e está planejado para uma versão futura.
 
+## Nix
+
+O repositório tem um flake com o pacote, as ferramentas de runtime no `PATH` e um shell de desenvolvimento:
+
+```bash
+nix build .#pawfwd          # compila e roda os testes unitários
+nix develop                 # shell com pytest, ruff e as ferramentas WireGuard/nftables
+nix run .#pawfwd -- --help
+```
+
 ## Segurança
 
 Veja [SECURITY.md](SECURITY.md) para as premissas de projeto e como reportar uma vulnerabilidade.

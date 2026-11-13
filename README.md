@@ -91,6 +91,16 @@ The project and the command are `pawfwd`. Some system identifiers keep the older
 
 Renaming these requires a coordinated migration between the VPS and the home server, and is planned for a future release.
 
+## Nix
+
+The repository includes a flake with the package, the runtime tools on `PATH` and a development shell:
+
+```bash
+nix build .#pawfwd          # builds and runs the unit tests
+nix develop                 # shell with pytest, ruff and the WireGuard/nftables tools
+nix run .#pawfwd -- --help
+```
+
 ## Security
 
 See [SECURITY.md](SECURITY.md) for the design assumptions and how to report a vulnerability.
