@@ -2,104 +2,109 @@
 
 **P**ackets **A**cross **W**ireGuard, **F**orwarded.
 
-O PawFwd publica serviços que rodam em uma rede doméstica (sem IP público ou atrás de CGNAT) por meio de uma VPS com IP público. O tráfego entra pela VPS, atravessa um túnel WireGuard dedicado e chega ao servidor de casa.
+PawFwd publishes services running on a home network (no public IP, or behind CGNAT) through a VPS with a public IP. Traffic enters the VPS, crosses a dedicated WireGuard tunnel and reaches the home server.
 
 ```
-cliente ──► VPS (ingress, IP público)
-                 │  DNAT + MSS clamp
+client ──► VPS (ingress, public IP)
+                 │  DNAT + TCP MSS clamp
                  ▼
-          túnel WireGuard dedicado  (10.77.0.0/24)
+          dedicated WireGuard tunnel  (10.77.0.0/24)
                  │
                  ▼
-          servidor doméstico (target)
+          home server (target)
 ```
 
-O Tailscale, se já estiver instalado, não é alterado. O PawFwd usa uma interface WireGuard própria e deixa o SSH e a administração no Tailscale.
+If Tailscale is already installed, PawFwd leaves it alone. PawFwd uses its own WireGuard interface and keeps SSH and administration on Tailscale.
 
-## Recursos
+> Português: [README.pt-BR.md](README.pt-BR.md)
 
-- Encaminhamento TCP, UDP ou ambos, com porta pública e porta de destino diferentes.
-- Clamp de MSS TCP no ingress, configurável (padrão 1200).
-- Opção `--preserve-ip` para o serviço enxergar o IP real do cliente, via policy routing.
-- Detecção de conflitos de sub-rede e de porta UDP.
-- Limpeza automática de instalações antigas (VXLAN e a v2 de transição).
+## Features
 
-## Requisitos
+- TCP, UDP, or both, with a public port that can differ from the target port.
+- TCP MSS clamping on the ingress, configurable (default 1200).
+- `--preserve-ip` so the service sees the real client address, using policy routing.
+- Detection of subnet conflicts and UDP port conflicts.
+- Automatic cleanup of installations from earlier releases (VXLAN and the transitional v2).
 
-- Linux com systemd e acesso root.
-- Python 3.10 ou superior.
-- `wireguard-tools`, `nftables`, `openssh-client`, `iproute2` e `procps`.
-  No Debian/Ubuntu: `sudo apt install wireguard-tools nftables openssh-client iproute2 procps`
-- Na VPS, a porta UDP do WireGuard (padrão 51820) liberada no firewall do provedor.
+## Requirements
 
-## Instalação
+- Linux with systemd, and root access.
+- Python 3.10 or newer.
+- `wireguard-tools`, `nftables`, `openssh-client`, `iproute2` and `procps`.
+  On Debian/Ubuntu: `sudo apt install wireguard-tools nftables openssh-client iproute2 procps`
+- On the VPS, the WireGuard UDP port (default 51820) open in the provider's firewall.
 
-Recomendamos um ambiente virtual dedicado. O launcher gravado em `/usr/local/bin/pawfwd` usa o Python desse ambiente, então o root precisa conseguir lê-lo.
+## Installation
+
+Use a dedicated virtual environment. The launcher written to `/usr/local/bin/pawfwd` runs with that environment's Python, so root must be able to read it.
 
 ```bash
 sudo python3 -m venv /opt/pawfwd
-sudo /opt/pawfwd/bin/pip install /caminho/para/pawfwd
-sudo /opt/pawfwd/bin/pawfwd init --role ingress   # na VPS
+sudo /opt/pawfwd/bin/pip install git+https://github.com/gabriel-fresan/pawfwd
+sudo /opt/pawfwd/bin/pawfwd init --role ingress   # on the VPS
 ```
 
-## Uso
+## Usage
 
-### 1. Configurar a VPS (ingress)
+### 1. Set up the VPS (ingress)
 
 ```bash
 sudo pawfwd init --role ingress
-# opcional: --listen-port 51820 --mss 1200
+# optional: --listen-port 51820 --mss 1200
 ```
 
-A chave pública impressa no final é usada no passo seguinte.
+The public key printed at the end is used in the next step.
 
-### 2. Conectar o servidor doméstico (target)
+### 2. Connect the home server (target)
 
 ```bash
-sudo pawfwd init <IP-PUBLICO-DA-VPS> --ssh-host <HOST-SSH-DA-VPS> --name meu-servidor
+sudo pawfwd init <VPS-PUBLIC-IP> --ssh-host <VPS-SSH-HOST> --name my-server
 ```
 
-O target registra a própria chave na VPS via SSH. Se a VPS pedir senha, o `sudo` interativo é usado no terminal; em serviços, configure chave SSH e uma regra de sudo restrita.
+The target registers its own key on the VPS over SSH. If the VPS asks for a password, interactive `sudo` is used in the terminal. For unattended runs, configure an SSH key and a restricted sudo rule.
 
-### 3. Gerenciar encaminhamentos (a partir do target)
+### 3. Manage forwards (from the target)
 
 ```bash
-sudo pawfwd add 25505                 # TCP e UDP, mesma porta
-sudo pawfwd add 25505:25565/tcp       # porta pública 25505 → destino 25565, só TCP
+sudo pawfwd add 25505                 # TCP and UDP, same port
+sudo pawfwd add 25505:25565/tcp       # public 25505 → target 25565, TCP only
 sudo pawfwd add 19132/udp --preserve-ip
 sudo pawfwd remove 25505/udp
 sudo pawfwd list
 sudo pawfwd status
-sudo pawfwd diag                      # diagnóstico de rede, WireGuard e nftables
+sudo pawfwd diag                      # network, WireGuard and nftables diagnostics
 ```
 
-Cada alteração é salva em `/etc/paw-fwd/config.json`, aplicada localmente e sincronizada com a VPS.
+Each change is saved to `/etc/paw-fwd/config.json`, applied locally and synchronized to the VPS.
 
-## Nomes de sistema
+## System names
 
-O nome do projeto e o comando são `pawfwd`. Alguns identificadores de sistema continuam com o nome antigo `paw-fwd` para não derrubar instalações em execução:
+The project and the command are `pawfwd`. Some system identifiers keep the older `paw-fwd` name so running installations are not broken:
 
-| Recurso | Nome |
+| Resource | Name |
 |---|---|
-| Comando | `pawfwd` |
-| Configuração | `/etc/paw-fwd/config.json` |
-| Interface WireGuard | `paw-fwd` |
-| Unidades systemd | `paw-fwd.service`, `wg-quick@paw-fwd.service` |
-| Tabelas nftables | `paw_fwd`, `paw_fwd_mss`, `paw_fwd_target` |
+| Command | `pawfwd` |
+| Configuration | `/etc/paw-fwd/config.json` |
+| WireGuard interface | `paw-fwd` |
+| systemd units | `paw-fwd.service`, `wg-quick@paw-fwd.service` |
+| nftables tables | `paw_fwd`, `paw_fwd_mss`, `paw_fwd_target` |
 
-Renomear esses itens exige migração coordenada entre VPS e servidor doméstico e está planejado para uma versão futura.
+Renaming these requires a coordinated migration between the VPS and the home server, and is planned for a future release.
 
-## Desenvolvimento
+## Security
+
+See [SECURITY.md](SECURITY.md) for the design assumptions and how to report a vulnerability.
+
+## Development
 
 ```bash
 python3 -m venv .venv && . .venv/bin/activate
 pip install -e ".[dev]"
-pytest
-ruff check src tests
+ruff check . && ruff format --check . && pytest -q
 ```
 
-Os testes cobrem as funções puras (parsing, validação, configuração WireGuard, MSS e registro de peers). Comandos que alteram rede, nftables e systemd precisam de um ambiente Linux com root e são testados manualmente.
+See [CONTRIBUTING.md](CONTRIBUTING.md). The unit tests cover pure functions (parsing, validation, WireGuard configuration, MSS rules, peer registration). Commands that change routing, nftables and systemd need a Linux host with root.
 
-## Licença
+## License
 
-Ainda não definida.
+MIT. See [LICENSE](LICENSE).
