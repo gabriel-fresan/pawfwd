@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import os
-import shutil
-from pathlib import Path
+import sys
 
 from pawfwd.constants import INSTALL_PATH, SYSCTL_FILE, SYSTEMD_UNIT, WG_IFACE
 from pawfwd.errors import PawFwdError
@@ -12,12 +10,19 @@ from pawfwd.system import atomic_write, run, say
 
 
 def install_self() -> None:
-    source = Path(__file__).resolve()
-    INSTALL_PATH.parent.mkdir(parents=True, exist_ok=True)
+    """Grava um launcher em INSTALL_PATH que usa o mesmo Python que instalou o pacote."""
+    launcher = (
+        f"#!{sys.executable}\n"
+        "# Gerado por 'pawfwd init' ou 'pawfwd install'. Não edite à mão.\n"
+        "import sys\n"
+        "\n"
+        "from pawfwd.cli import main\n"
+        "\n"
+        "sys.exit(main())\n"
+    )
     try:
-        if source != INSTALL_PATH.resolve():
-            shutil.copy2(source, INSTALL_PATH)
-        os.chmod(INSTALL_PATH, 0o755)
+        INSTALL_PATH.parent.mkdir(parents=True, exist_ok=True)
+        atomic_write(INSTALL_PATH, launcher, 0o755)
     except OSError as exc:
         raise PawFwdError(f"Não consegui instalar o executável em {INSTALL_PATH}: {exc}") from exc
 
