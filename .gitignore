@@ -1,0 +1,12 @@
+# Bytecode e cache do Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Ambientes virtuais e builds
+.venv/
+venv/
+build/
+dist/
+*.egg-info/
