@@ -19,9 +19,9 @@ from pawfwd.target import init_target
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="paw-fwd",
+        prog="pawfwd",
         description="PawFwd — encaminhamento de portas com túnel WireGuard dedicado.",
-        epilog="Dica: paw-fwd add 25505 publica TCP+UDP; use /tcp ou /udp para escolher um só. O ingress aplica MSS clamp TCP automaticamente.",
+        epilog="Dica: pawfwd add 25505 publica TCP+UDP; use /tcp ou /udp para escolher um só. O ingress aplica MSS clamp TCP automaticamente.",
     )
     parser.add_argument("--version", action="version", version=f"PawFwd {VERSION}")
     sub = parser.add_subparsers(dest="command")
@@ -82,13 +82,13 @@ def main(argv: list[str] | None = None) -> int:
                 raise PawFwdError("A porta UDP do WireGuard precisa estar entre 1 e 65535.")
             if args.role == "ingress":
                 if args.endpoint:
-                    raise PawFwdError("No ingress, não informe endpoint; use 'paw-fwd init --role ingress'.")
+                    raise PawFwdError("No ingress, não informe endpoint; use 'pawfwd init --role ingress'.")
                 init_ingress(args.listen_port, args.mss)
             else:
                 if args.mss is not None:
-                    raise PawFwdError("--mss só pode ser usado no ingress: paw-fwd init --role ingress --mss 1200.")
+                    raise PawFwdError("--mss só pode ser usado no ingress: pawfwd init --role ingress --mss 1200.")
                 if not args.endpoint:
-                    raise PawFwdError("Informe o IP público da VPS: 'paw-fwd init <IP-DA-VPS>'.")
+                    raise PawFwdError("Informe o IP público da VPS: 'pawfwd init <IP-DA-VPS>'.")
                 init_target(args.endpoint, args.ssh_host, args.ssh_user, args.ssh_port, args.name)
             return 0
 

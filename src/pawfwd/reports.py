@@ -32,7 +32,7 @@ def cmd_list(cfg: dict[str, Any]) -> None:
         else:
             pending = cfg.get("pending_endpoint", "não informado")
             say(f"Pareamento: pendente/incompleto · VPS {pending}")
-            say("Rode novamente 'sudo paw-fwd init <IP-DA-VPS>' para concluir com a mesma chave.")
+            say("Rode novamente 'sudo pawfwd init <IP-DA-VPS>' para concluir com a mesma chave.")
     say("")
     if not cfg.get("rules"):
         say("Nenhum encaminhamento configurado. (Os bigodes estão em repouso.)")

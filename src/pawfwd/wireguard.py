@@ -32,7 +32,7 @@ def start_ingress_wireguard_with_diagnostics(cfg: dict[str, Any]) -> None:
         if conflicts:
             raise PawFwdError(
                 f"A porta UDP {port} conflita com outro listener ({'; '.join(conflicts)}). "
-                f"Rode 'sudo paw-fwd init --role ingress --listen-port {port + 1}' "
+                f"Rode 'sudo pawfwd init --role ingress --listen-port {port + 1}' "
                 "e libere essa nova porta UDP no firewall da VPS."
             ) from exc
         raise PawFwdError(

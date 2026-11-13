@@ -77,7 +77,7 @@ TCP_MSS_MAX = WG_MTU - 40
 TARGET_NFT_TABLE = "paw_fwd_target"
 
 
-INSTALL_PATH = Path("/usr/local/bin/paw-fwd")
+INSTALL_PATH = Path("/usr/local/bin/pawfwd")
 
 
 SYSTEMD_UNIT = Path("/etc/systemd/system/paw-fwd.service")

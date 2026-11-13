@@ -55,4 +55,4 @@ def persist_sysctls() -> None:
 
 def install_command() -> None:
     install_self()
-    say(f"[+] PawFwd instalado em {INSTALL_PATH}. Agora rode 'paw-fwd init'. :3")
+    say(f"[+] PawFwd instalado em {INSTALL_PATH}. Agora rode 'pawfwd init'. :3")

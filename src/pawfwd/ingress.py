@@ -115,7 +115,7 @@ def init_ingress(requested_listen_port: int | None, requested_mss: int | None = 
     say(f"  TCP MSS   : clamp até {cfg['tcp_mss']} bytes")
     say(f"  Chave pub.: {cfg['wireguard']['public_key']}")
     say("  Próximo   : no servidor doméstico, rode:")
-    say("              sudo paw-fwd init <IP-PUBLICO> --ssh-host <HOST-SSH>\n")
+    say("              sudo pawfwd init <IP-PUBLICO> --ssh-host <HOST-SSH>\n")
 
 
 def peer_register(public_key: str, name: str) -> None:

@@ -123,4 +123,4 @@ def init_target(endpoint: str, ssh_host: str | None, ssh_user: str | None,
     say(f"  Peer      : {name}")
     say(f"  Túnel     : {cfg['wireguard']['address']} → {registration['ingress_tunnel_ip']}")
     say("  Tailscale : continua intocado; ele ainda pode cuidar do SSH e da administração.")
-    say("\nAgora você já pode usar 'sudo paw-fwd add 25505'. :3\n")
+    say("\nAgora você já pode usar 'sudo pawfwd add 25505'. :3\n")

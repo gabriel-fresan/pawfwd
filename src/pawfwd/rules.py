@@ -21,7 +21,7 @@ from pawfwd.system import say
 def apply_local(cfg: dict[str, Any]) -> None:
     if not interface_exists():
         if cfg.get("role") == "target" and not cfg.get("ingress_peer"):
-            raise PawFwdError("O pareamento com a VPS ainda não foi concluído. Rode 'sudo paw-fwd init <IP-DA-VPS>'.")
+            raise PawFwdError("O pareamento com a VPS ainda não foi concluído. Rode 'sudo pawfwd init <IP-DA-VPS>'.")
         raise PawFwdError(f"A interface {WG_IFACE} não está ativa. Rode 'sudo systemctl start wg-quick@paw-fwd'.")
     persist_sysctls()
     if cfg["role"] == "ingress":
@@ -33,7 +33,7 @@ def apply_local(cfg: dict[str, Any]) -> None:
 def sync_rules_to_ingress(cfg: dict[str, Any]) -> None:
     control = cfg.get("control")
     if not control:
-        raise PawFwdError("Não há conexão de controle configurada. Rode 'paw-fwd init <IP-VPS>' novamente.")
+        raise PawFwdError("Não há conexão de controle configurada. Rode 'pawfwd init <IP-VPS>' novamente.")
     payload = {
         "rules": [
             {**rule, "peer_ip": str(ipaddress.IPv4Interface(cfg["wireguard"]["address"]).ip)}

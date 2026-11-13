@@ -22,7 +22,7 @@ from pawfwd.system import atomic_write, run
 def load_config(required: bool = True) -> dict[str, Any]:
     if not CONFIG_PATH.exists():
         if required:
-            raise PawFwdError("PawFwd ainda não foi inicializado. Comece com 'paw-fwd init'.")
+            raise PawFwdError("PawFwd ainda não foi inicializado. Comece com 'pawfwd init'.")
         return {}
     try:
         cfg = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
